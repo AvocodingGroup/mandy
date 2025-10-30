@@ -1,0 +1,83 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper funkcia pre autentifikáciu
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper funkcia pre overenie vlastníctva
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Users kolekcia
+    match /users/{userId} {
+      // Každý môže čítať užívateľov (pre validáciu nickname pred prihlásením)
+      allow read: if true;
+      
+      // Užívateľ môže vytvoriť vlastný profil
+      allow create: if isAuthenticated() 
+                    && request.auth.uid == userId
+                    && request.resource.data.userId == userId
+                    && request.resource.data.nickname is string
+                    && request.resource.data.nickname.size() >= 3;
+      
+      // Užívateľ môže aktualizovať vlastný profil
+      allow update: if isOwner(userId)
+                    && request.resource.data.userId == userId;
+      
+      // Žiadne mazanie užívateľov
+      allow delete: if false;
+    }
+
+    // Orders kolekcia
+    match /orders/{orderId} {
+      // Každý autentifikovaný môže čítať objednávky
+      allow read: if isAuthenticated();
+      
+      // Každý autentifikovaný môže vytvoriť objednávku
+      allow create: if isAuthenticated()
+                    && request.resource.data.createdBy == request.auth.uid
+                    && request.resource.data.priority is int
+                    && request.resource.data.priority >= 1
+                    && request.resource.data.status in ['waiting', 'completed']
+                    && request.resource.data.items is list;
+      
+      // Každý autentifikovaný môže aktualizovať objednávku
+      allow update: if isAuthenticated();
+      
+      // Každý autentifikovaný môže vymazať objednávku
+      allow delete: if isAuthenticated();
+      
+      // Comments sub-kolekcia
+      match /comments/{commentId} {
+        // Každý autentifikovaný môže čítať komentáre
+        allow read: if isAuthenticated();
+        
+        // Každý autentifikovaný môže vytvoriť komentár
+        allow create: if isAuthenticated()
+                      && request.resource.data.authorId == request.auth.uid
+                      && request.resource.data.text is string
+                      && request.resource.data.text.size() > 0;
+        
+        // Každý autentifikovaný môže aktualizovať komentár (napr. resolved)
+        allow update: if isAuthenticated();
+        
+        // Autor môže vymazať vlastný komentár, alebo ktokoľvek autentifikovaný
+        allow delete: if isAuthenticated();
+      }
+    }
+
+    // Settings kolekcia
+    match /settings/{settingId} {
+      // Každý autentifikovaný môže čítať nastavenia
+      allow read: if isAuthenticated();
+      
+      // Každý autentifikovaný môže zapisovať do nastavení
+      allow write: if isAuthenticated();
+    }
+  }
+}

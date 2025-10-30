@@ -1,0 +1,20 @@
+{
+  "recipes": [
+    {
+      "id": "1730053200000",
+      "name": "Klasický burger",
+      "ingredients": [
+        "žemľa",
+        "mäso",
+        "rajčina",
+        "uhorka",
+        "šalát",
+        "syr",
+        "cibuľa",
+        "kečup",
+        "horčica"
+      ],
+      "isActive": true
+    }
+  ]
+}
