@@ -229,9 +229,9 @@ export default function ExpenseActionDetailPage({ params }: PageProps) {
                 {action?.name || 'Akcia'}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                <EuroIcon sx={{ color: 'success.main' }} />
-                <Typography variant="h6" color="success.main" fontWeight="bold">
-                  {action?.totalAmount.toFixed(2) || '0.00'}
+                <EuroIcon sx={{ color: 'warning.main' }} />
+                <Typography variant="h6" color="warning.main" fontWeight="bold">
+                  {items.reduce((sum, item) => sum + item.amount, 0).toFixed(2)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   ({items.length}{' '}
@@ -272,7 +272,7 @@ export default function ExpenseActionDetailPage({ params }: PageProps) {
               const photo = getPhotoById(item.photoId);
               return (
                 <Paper key={item.itemId} sx={{ mb: 2 }}>
-                  <ListItem>
+                  <ListItem sx={{ pr: 12 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
                       {photo && (
                         <Image
@@ -302,8 +302,8 @@ export default function ExpenseActionDetailPage({ params }: PageProps) {
                         }
                       />
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <EuroIcon sx={{ color: 'success.main', fontSize: 20 }} />
-                        <Typography variant="h6" fontWeight="bold" color="success.main">
+                        <EuroIcon sx={{ color: 'warning.main', fontSize: 20 }} />
+                        <Typography variant="h6" fontWeight="bold" color="warning.main">
                           {item.amount.toFixed(2)}
                         </Typography>
                       </Box>
