@@ -60,7 +60,6 @@ export default function ExpenseActionDetailPage({ params }: PageProps) {
   const [items, setItems] = useState<ExpenseItem[]>([]);
   const [action, setAction] = useState<ExpenseAction | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
-  const [mounted, setMounted] = useState(false);
 
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
@@ -74,10 +73,6 @@ export default function ExpenseActionDetailPage({ params }: PageProps) {
   const [editDescription, setEditDescription] = useState('');
   const [editAmount, setEditAmount] = useState('');
   const [editPhotoId, setEditPhotoId] = useState('');
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -192,7 +187,7 @@ export default function ExpenseActionDetailPage({ params }: PageProps) {
     return photos.find((p) => p.photoId === photoId);
   };
 
-  if (!mounted || loading || !user) {
+  if (loading || !user) {
     return (
       <Box
         sx={{
@@ -203,14 +198,12 @@ export default function ExpenseActionDetailPage({ params }: PageProps) {
           bgcolor: 'background.default',
         }}
       >
-        {mounted && (
-          <Box sx={{ textAlign: 'center' }}>
-            <CircularProgress size={48} />
-            <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
-              Načítavam...
-            </Typography>
-          </Box>
-        )}
+        <Box sx={{ textAlign: 'center' }}>
+          <CircularProgress size={48} />
+          <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
+            Načítavam...
+          </Typography>
+        </Box>
       </Box>
     );
   }
@@ -271,52 +264,50 @@ export default function ExpenseActionDetailPage({ params }: PageProps) {
             {items.map((item) => {
               const photo = getPhotoById(item.photoId);
               return (
-                <Paper key={item.itemId} sx={{ mb: 2 }}>
-                  <ListItem sx={{ pr: 12 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
+                <Paper key={item.itemId} sx={{ mb: 2, p: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                    {photo && (
+                      <Image
+                        src={photo.thumbnailUrl}
+                        alt={photo.fileName}
+                        width={60}
+                        height={60}
+                        style={{ objectFit: 'cover', borderRadius: 4 }}
+                      />
+                    )}
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body1" fontWeight="bold">
+                        {item.description}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
+                        {item.createdAt.toDate().toLocaleDateString('sk-SK')}
+                      </Typography>
                       {photo && (
-                        <Image
-                          src={photo.thumbnailUrl}
-                          alt={photo.fileName}
-                          width={60}
-                          height={60}
-                          style={{ objectFit: 'cover', borderRadius: 4 }}
+                        <Chip
+                          icon={<PhotoIcon />}
+                          label={photo.fileName}
+                          size="small"
+                          variant="outlined"
                         />
                       )}
-                      <ListItemText
-                        primary={item.description}
-                        secondary={
-                          <Box component="span" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                            <Typography variant="caption" color="text.secondary">
-                              {item.createdAt.toDate().toLocaleDateString('sk-SK')}
-                            </Typography>
-                            {photo && (
-                              <Chip
-                                icon={<PhotoIcon />}
-                                label={photo.fileName}
-                                size="small"
-                                variant="outlined"
-                              />
-                            )}
-                          </Box>
-                        }
-                      />
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <EuroIcon sx={{ color: 'warning.main', fontSize: 20 }} />
                         <Typography variant="h6" fontWeight="bold" color="warning.main">
                           {item.amount.toFixed(2)}
                         </Typography>
                       </Box>
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <IconButton size="small" onClick={() => openEdit(item)}>
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton size="small" color="error" onClick={() => openDelete(item)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
                     </Box>
-                    <ListItemSecondaryAction>
-                      <IconButton edge="end" onClick={() => openEdit(item)} sx={{ mr: 1 }}>
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton edge="end" color="error" onClick={() => openDelete(item)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </ListItem>
+                  </Box>
                 </Paper>
               );
             })}
