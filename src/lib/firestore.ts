@@ -52,15 +52,17 @@ export async function isNicknameUnique(nickname: string): Promise<boolean> {
  * Vytvorí nového užívateľa s anonymným prihlásením
  */
 export async function createUser(nickname: string): Promise<User> {
-  // Validuj unikátnosť nickname
-  const isUnique = await isNicknameUnique(nickname);
-  if (!isUnique) {
-    throw new Error('Tento nickname už existuje. Zvoľte iný.');
-  }
-
-  // Anonymné prihlásenie
+  // Anonymné prihlásenie NAJPRV (aby sme mali permissions)
   const userCredential = await signInAnonymously(auth);
   const userId = userCredential.user.uid;
+
+  // Teraz validuj unikátnosť nickname (už sme autentifikovaní)
+  const isUnique = await isNicknameUnique(nickname);
+  if (!isUnique) {
+    // Ak nie je unikátny, odhlásiť sa a hodiť chybu
+    await signOut(auth);
+    throw new Error('Tento nickname už existuje. Zvoľte iný.');
+  }
 
   // Ulož užívateľa do Firestore
   const user: User = {
